@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 from geopy import distance
 from geopy.point import Point
 from pony.orm import Database, db_session
