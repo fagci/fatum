@@ -1,0 +1,4 @@
+*.ini
+*.session
+__pycache__/
+db.sqlite
