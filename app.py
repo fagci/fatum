@@ -2,7 +2,7 @@
 from geopy import distance
 from geopy.point import Point
 from pony.orm import Database, db_session
-from pony.orm.core import ObjectNotFound, Required, PrimaryKey
+from pony.orm.core import ObjectNotFound, PrimaryKey, Required
 from pyrogram import Client, filters, idle
 from pyrogram.types import Location, Message
 import quantumrandom as qr
@@ -41,10 +41,8 @@ def loc(c: Client, m: Message):
         m.reply('Error =(')
 
 
-@client.on_message(filters.command('distance'))
 @db_session
-def dist(c: Client, m: Message):
-    val = m.text[len('/distance'):]
+def change_distance(m: Message, val: str):
     d = 0
     if val:
         try:
@@ -59,6 +57,16 @@ def dist(c: Client, m: Message):
     else:
         d = u.distance
     m.reply('Distance: %d' % d)
+
+
+@client.on_message(filters.regex(r'^\d+'))
+def dist(c: Client, m: Message):
+    change_distance(m, m.text)
+
+
+@client.on_message(filters.command('distance'))
+def dist(c: Client, m: Message):
+    change_distance(m, m.text[len('/distance'):])
 
 
 db.bind(provider='sqlite', filename='db.sqlite', create_db=True)
