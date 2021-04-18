@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from datetime import datetime
+
 from geopy import distance
 from geopy.point import Point
 from pony.orm import Database, db_session
@@ -18,7 +19,7 @@ class UserSetting(db.Entity):
     distance = Required(int, default=3000)
     created_at = Required(datetime, default=datetime.utcnow())
     updated_at = Required(datetime, default=datetime.utcnow())
-    last_interaction = Required(datetime, default=datetime.utcnow())
+    points_count = Required(int, default=0)
 
 
 @db_session
@@ -27,12 +28,19 @@ def get_user(uid):
         u = UserSetting[uid]
     except ObjectNotFound:
         u = UserSetting(id=uid)
-    u.last_interaction = datetime.utcnow()
     return u
+
+
+@db_session
+def update_points_count(uid):
+    u = UserSetting[uid]
+    u.points_count += 1
+    u.updated_at = datetime.utcnow()
 
 
 @client.on_message(filters.location)
 def loc(c: Client, m: Message):
+    m.reply_chat_action('find_location')
     uid = m.from_user.id
     u = get_user(uid)
 
@@ -43,8 +51,10 @@ def loc(c: Client, m: Message):
         angle = qr.randint(0, 360)
         np = distance.distance(d).destination(p, angle)
         m.reply_location(np.latitude, np.longitude)
-    except:
-        m.reply('Error =(')
+        c.send_message(m.from_user.id, 'В добрый путь!')
+        update_points_count(uid)
+    except Exception as e:
+        m.reply('Error =(\n%s' % e)
 
 
 @db_session
