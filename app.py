@@ -14,7 +14,7 @@ db = Database()
 
 class UserSetting(db.Entity):
     id = PrimaryKey(int)
-    distance = Required(int, default=1000)
+    distance = Required(int, default=3000)
 
 
 @db_session
