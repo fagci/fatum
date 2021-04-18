@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from datetime import datetime
 from geopy import distance
 from geopy.point import Point
 from pony.orm import Database, db_session
@@ -15,14 +16,19 @@ db = Database()
 class UserSetting(db.Entity):
     id = PrimaryKey(int)
     distance = Required(int, default=3000)
+    created_at = Required(datetime, default=datetime.utcnow())
+    updated_at = Required(datetime, default=datetime.utcnow())
+    last_interaction = Required(datetime, default=datetime.utcnow())
 
 
 @db_session
 def get_user(uid):
     try:
-        return UserSetting[uid]
+        u = UserSetting[uid]
     except ObjectNotFound:
-        return UserSetting(id=uid)
+        u = UserSetting(id=uid)
+    u.last_interaction = datetime.utcnow()
+    return u
 
 
 @client.on_message(filters.location)
@@ -47,6 +53,8 @@ def change_distance(m: Message, val: str):
     if val:
         try:
             d = int(val)
+            if d <= 0 or d > 20_000_000:
+                raise ValueError
         except:
             m.reply('Wrong value')
             return
@@ -54,9 +62,10 @@ def change_distance(m: Message, val: str):
     u = get_user(m.from_user.id)
     if d:
         u.distance = d
+        u.updated_at = datetime.utcnow()
     else:
         d = u.distance
-    m.reply('Distance: %d' % d)
+    m.reply('Дистанция: %d м' % d)
 
 
 @client.on_message(filters.regex(r'^\d+'))
@@ -67,6 +76,18 @@ def dist(c: Client, m: Message):
 @client.on_message(filters.command('distance'))
 def dist(c: Client, m: Message):
     change_distance(m, m.text[len('/distance'):])
+
+
+@client.on_message(filters.command(['start', 'help']))
+def dist(c: Client, m: Message):
+    u = get_user(m.from_user.id)
+    m.reply((
+        '🙋 Добро пожаловать в ваш Фатум!\n\n'
+        'Дистанция генерации: %d м.\n\n'
+        'Отправьте местоположение '
+        'для генерации новой точки '
+        'или отправьте желаемую дистанцию в метрах.'
+    ) % (u.distance))
 
 
 db.bind(provider='sqlite', filename='db.sqlite', create_db=True)
