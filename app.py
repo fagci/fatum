@@ -19,7 +19,7 @@ db = Database()
 
 class UserSetting(db.Entity):
     id = PrimaryKey(int)
-    username = Optional(str)
+    username = Optional(str, default='')
     distance = Required(int, default=3000)
     created_at = Required(datetime, default=datetime.utcnow())
     updated_at = Required(datetime, default=datetime.utcnow())
