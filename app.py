@@ -113,10 +113,11 @@ async def loc(c: Client, m: Message):
 
 @db_session
 def get_stats():
-    users = UserSetting.select().order_by(lambda u: -u.points_count).limit(5)
-    return '\n\n'.join(
+    total = UserSetting.select().count()
+    users = UserSetting.select().order_by(lambda u: -u.points_count).limit(10)
+    return ('Total: %s\n\n' % total) + '\n\n'.join(
         (
-            '%s\n• %s %s' % (
+            '%s (%s)\n  %s' % (
                 ('@%s' % u.username) if u.username else u.id,
                 u.points_count,
                 u.updated_at.replace(tzinfo=tzutc()).astimezone(
@@ -128,8 +129,7 @@ def get_stats():
 
 @ client.on_message(filters.command('stats') & filters.chat(ADMIN_ID))
 async def stats(c: Client, m: Message):
-    s = get_stats()
-    await m.reply_text('Stats:\n\n%s' % s)
+    await m.reply_text(get_stats())
 
 
 db.bind(provider='sqlite', filename='db.sqlite', create_db=True)
