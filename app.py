@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 from datetime import datetime
 
+from dateutil.tz import tzlocal
 from geopy import distance
 from geopy.point import Point
 from pony.orm import Database, db_session
-from pony.orm.core import ObjectNotFound, PrimaryKey, Required, Optional
+from pony.orm.core import ObjectNotFound, Optional, PrimaryKey, Required
 from pyrogram import Client, filters
 from pyrogram.types import Location, Message
 from pyrogram.types.user_and_chats.user import User
@@ -112,12 +113,12 @@ async def loc(c: Client, m: Message):
 @db_session
 def get_stats():
     users = UserSetting.select().order_by(lambda u: -u.points_count).limit(5)
-    return '\n'.join(
+    return '\n\n'.join(
         (
-            '%s %s %s' % (
+            '%s\n• %s %s' % (
                 ('@%s' % u.username) if u.username else u.id,
                 u.points_count,
-                u.updated_at.astimezone().strftime('%d.%m.%y %H:%M')
+                u.updated_at.astimezone(tzlocal()).strftime('%d.%m.%y %H:%M')
             )
         ) for u in users
     )
