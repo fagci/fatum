@@ -2,6 +2,7 @@
 from datetime import datetime
 
 from dateutil.tz import tzlocal
+from dateutil.tz.tz import tzutc
 from geopy import distance
 from geopy.point import Point
 from pony.orm import Database, db_session
@@ -118,7 +119,8 @@ def get_stats():
             '%s\n• %s %s' % (
                 ('@%s' % u.username) if u.username else u.id,
                 u.points_count,
-                u.updated_at.astimezone(tzlocal()).strftime('%d.%m.%y %H:%M')
+                u.updated_at.replace(tzinfo=tzutc()).astimezone(
+                    tzlocal()).strftime('%d.%m.%y %H:%M')
             )
         ) for u in users
     )
