@@ -19,7 +19,7 @@ db = Database()
 
 class UserSetting(db.Entity):
     id = PrimaryKey(int)
-    username = Optional(str, default='')
+    username = Optional(str)
     distance = Required(int, default=3000)
     created_at = Required(datetime, default=datetime.utcnow())
     updated_at = Required(datetime, default=datetime.utcnow())
@@ -33,7 +33,7 @@ def get_user(user: User) -> UserSetting:
         if not u.username and user.username:
             u.username = user.username
     except ObjectNotFound:
-        u = UserSetting(id=user.id, username=user.username)
+        u = UserSetting(id=user.id, username=user.username or '')
     return u
 
 
