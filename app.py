@@ -124,7 +124,7 @@ def get_stats():
                 pc,
                 ('@%s' % un) if un else uid,
             )
-        ) for upd, pc, un, uid in users
+        ) for upd, pc, un, uid in users[::-1]
     )
 
 
