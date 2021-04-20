@@ -6,7 +6,7 @@ from dateutil.tz.tz import tzutc
 from geopy import distance
 from geopy.point import Point
 from pony.orm import Database, db_session
-from pony.orm.core import ObjectNotFound, Optional, PrimaryKey, Required
+from pony.orm.core import ObjectNotFound, Optional, PrimaryKey, Required, select
 from pyrogram import Client, filters
 from pyrogram.types import Location, Message
 from pyrogram.types.user_and_chats.user import User
@@ -114,16 +114,17 @@ async def loc(c: Client, m: Message):
 @db_session
 def get_stats():
     total = UserSetting.select().count()
-    users = UserSetting.select().order_by(lambda u: -u.points_count).limit(10)
-    return ('Total: %s\n\n' % total) + '\n\n'.join(
+    users = select((u.updated_at, u.points_count, u.username, u.id)
+                   for u in UserSetting).order_by(1).limit(10)
+    return ('Total: %s\n\n' % total) + '\n'.join(
         (
-            '%s (%s)\n  %s' % (
-                ('@%s' % u.username) if u.username else u.id,
-                u.points_count,
-                u.updated_at.replace(tzinfo=tzutc()).astimezone(
-                    tzlocal()).strftime('%d.%m.%y %H:%M')
+            '`%s %s` %s' % (
+                upd.replace(tzinfo=tzutc()).astimezone(
+                    tzlocal()).strftime('%d.%m.%y %H:%M'),
+                pc,
+                ('@%s' % un) if un else uid,
             )
-        ) for u in users
+        ) for upd, pc, un, uid in users
     )
 
 
