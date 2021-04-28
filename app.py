@@ -23,8 +23,8 @@ class UserSetting(db.Entity):
     id = PrimaryKey(int)
     username = Optional(str)
     distance = Required(int, default=3000)
-    created_at = Required(datetime, default=datetime.utcnow())
-    updated_at = Required(datetime, default=datetime.utcnow())
+    created_at = Required(datetime, default=datetime.utcnow)
+    updated_at = Required(datetime, default=datetime.utcnow)
     points_count = Required(int, default=0)
 
 
