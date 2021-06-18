@@ -68,22 +68,22 @@ def change_distance(user: User, val: str):
 
 
 @client.on_message(filters.regex(r'^\d+'))
-async def dist(c: Client, m: Message):
+def dist(_: Client, m: Message):
     d = change_distance(m.from_user, m.text)
-    await m.reply('Дистанция: %d м' % d)
+    m.reply('Дистанция: %d м' % d)
 
 
 @client.on_message(filters.command('distance'))
-async def dist_cmd(c: Client, m: Message):
+def dist_cmd(_: Client, m: Message):
     """old variant with distance set"""
     d = change_distance(m.from_user, m.text[len('/distance'):])
-    await m.reply('Дистанция: %d м' % d)
+    m.reply('Дистанция: %d м' % d)
 
 
 @client.on_message(filters.command(['start', 'help']))
-async def dist(c: Client, m: Message):
+def help(_: Client, m: Message):
     u = get_user(m.from_user)
-    await m.reply((
+    m.reply((
         '🙋 Добро пожаловать в ваш Фатум!\n\n'
         'Дистанция генерации: %d м.\n\n'
         'Отправьте местоположение '
@@ -93,8 +93,8 @@ async def dist(c: Client, m: Message):
 
 
 @client.on_message(filters.location)
-async def loc(c: Client, m: Message):
-    await m.reply_chat_action('find_location')
+def loc(c: Client, m: Message):
+    m.reply_chat_action('find_location')
     user = m.from_user
     u = get_user(user)
 
@@ -104,11 +104,11 @@ async def loc(c: Client, m: Message):
         d = qr.randint(500, u.distance) / 1000
         angle = qr.randint(0, 360)
         np = distance.distance(d).destination(p, angle)
-        await m.reply_location(np.latitude, np.longitude)
-        await c.send_message(m.from_user.id, 'В добрый путь!')
+        m.reply_location(np.latitude, np.longitude)
+        c.send_message(m.from_user.id, 'В добрый путь!')
         update_points_count(user)
     except Exception as e:
-        await m.reply('Error =(\n%s' % e)
+        m.reply('Error =(\n%s' % e)
 
 
 @db_session
@@ -129,8 +129,8 @@ def get_stats():
 
 
 @ client.on_message(filters.command('stats') & filters.chat(ADMIN_ID))
-async def stats(c: Client, m: Message):
-    await m.reply_text(get_stats())
+def stats(_: Client, m: Message):
+    m.reply_text(get_stats())
 
 
 db.bind(provider='sqlite', filename='db.sqlite', create_db=True)
